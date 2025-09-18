@@ -16,7 +16,6 @@ import type * as emails_baseEmail from "../emails/baseEmail.js";
 import type * as emails_magicLink from "../emails/magicLink.js";
 import type * as emails_resetPassword from "../emails/resetPassword.js";
 import type * as emails_verifyEmail from "../emails/verifyEmail.js";
-import type * as emails_verifyOTP from "../emails/verifyOTP.js";
 import type * as http from "../http.js";
 
 import type {
@@ -42,7 +41,6 @@ declare const fullApi: ApiFromModules<{
   "emails/magicLink": typeof emails_magicLink;
   "emails/resetPassword": typeof emails_resetPassword;
   "emails/verifyEmail": typeof emails_verifyEmail;
-  "emails/verifyOTP": typeof emails_verifyOTP;
   http: typeof http;
 }>;
 declare const fullApiWithMounts: typeof fullApi;

@@ -2,14 +2,13 @@ import { createClient, type GenericCtx } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import { requireMutationCtx } from "@convex-dev/better-auth/utils";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
-import { emailOTP, magicLink } from "better-auth/plugins";
+import { magicLink } from "better-auth/plugins";
 import { components } from "./_generated/api";
 import type { DataModel } from "./_generated/dataModel";
 import { type QueryCtx, query } from "./_generated/server";
 import {
 	sendEmailVerification,
 	sendMagicLink,
-	sendOTPVerification,
 	sendResetPassword,
 } from "./email";
 
@@ -72,19 +71,11 @@ export const createAuth = (
 		plugins: [
 			magicLink({
 				disableSignUp: true,
+				
 				sendMagicLink: async ({ email, url }) => {
 					await sendMagicLink(requireMutationCtx(ctx), {
 						to: email,
 						url,
-					});
-				},
-			}),
-			emailOTP({
-				disableSignUp: true,
-				async sendVerificationOTP({ email, otp }) {
-					await sendOTPVerification(requireMutationCtx(ctx), {
-						to: email,
-						code: otp,
 					});
 				},
 			}),

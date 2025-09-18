@@ -1,6 +1,5 @@
 import { convexClient } from "@convex-dev/better-auth/client/plugins";
 import {
-	emailOTPClient,
 	inferAdditionalFields,
 	magicLinkClient,
 } from "better-auth/client/plugins";
@@ -11,7 +10,6 @@ export const authClient = createAuthClient({
 	plugins: [
 		inferAdditionalFields<typeof createAuth>(),
 		magicLinkClient(),
-		emailOTPClient(),
 		convexClient(),
 	],
 });

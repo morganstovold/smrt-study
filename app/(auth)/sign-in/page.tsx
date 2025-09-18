@@ -1,15 +1,16 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
 	CardDescription,
-	CardFooter,
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
@@ -19,18 +20,25 @@ import { authClient } from "@/lib/auth-client";
 
 export default function SignInPage() {
 	const router = useRouter();
+
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const [otp, setOtp] = useState("");
 	const [magicLinkLoading, setMagicLinkLoading] = useState(false);
 	const [otpLoading, setOtpLoading] = useState(false);
 	const [forgotLoading, setForgotLoading] = useState(false);
 	const [signInMethod, setSignInMethod] = useState<"password" | "passwordless">(
 		"passwordless",
 	);
-	const [otpSent, setOtpSent] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [success, setSuccess] = useState<string | null>(null);
+
+	const clearMessages = () => {
+		setError(null);
+		setSuccess(null);
+	};
 
 	const handleSignIn = async () => {
+		clearMessages();
 		await authClient.signIn.email(
 			{
 				email,
@@ -45,37 +53,52 @@ export default function SignInPage() {
 					if (ctx.data.twoFactorRedirect) {
 						router.push("/verify-2fa");
 					} else {
+						toast.success("Welcome back! You've been signed in successfully.");
 						router.push("/");
 					}
 				},
 				onError: (ctx) => {
 					setOtpLoading(false);
-					alert(ctx.error.message);
+					console.log(ctx);
+					// Check for better-auth USER_NOT_FOUND error code
+					if (ctx.error.code === "USER_NOT_FOUND") {
+						toast.error("No account found with this email", {
+							action: {
+								label: "Sign up",
+								onClick: () => router.push("/sign-up"),
+							},
+						});
+					} else {
+						setError(ctx.error.message);
+					}
 				},
 			},
 		);
 	};
 
 	const handleResetPassword = async () => {
+		clearMessages();
 		setForgotLoading(true);
 		try {
 			await authClient.forgetPassword({
 				email,
 				redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
 			});
-			alert("Check your email for the reset password link!");
+			toast.success("Password reset email sent!");
 		} catch {
-			alert("Failed to send reset password link. Please try again.");
+			toast.error("Failed to send reset email");
 		} finally {
 			setForgotLoading(false);
 		}
 	};
 
 	const handleMagicLinkSignIn = async () => {
+		clearMessages();
 		await authClient.signIn.magicLink(
 			{
 				email,
 				callbackURL: "/dashboard",
+				errorCallbackURL: "/sign-in",
 			},
 			{
 				onRequest: () => {
@@ -83,21 +106,34 @@ export default function SignInPage() {
 				},
 				onSuccess: () => {
 					setMagicLinkLoading(false);
-					alert("Check your email for the magic link!");
+					toast.success("Check your email and click the link to sign in.");
 				},
 				onError: (ctx) => {
 					setMagicLinkLoading(false);
 					console.log(ctx);
-					alert(ctx.error.message);
+					// Check for better-auth USER_NOT_FOUND error code
+					if (ctx.error.code === "USER_NOT_FOUND") {
+						toast.error("No account found with this email", {
+							action: {
+								label: "Sign up",
+								onClick: () => router.push("/sign-up"),
+							},
+						});
+					} else {
+						setError(ctx.error.message);
+					}
 				},
 			},
 		);
 	};
 
 	const handleGithubSignIn = async () => {
+		clearMessages();
 		await authClient.signIn.social(
 			{
 				provider: "github",
+				callbackURL: "/dashboard",
+				errorCallbackURL: "/sign-in",
 			},
 			{
 				onRequest: () => {
@@ -105,75 +141,32 @@ export default function SignInPage() {
 				},
 				onResponse: () => setOtpLoading(false),
 				onError: (ctx) => {
-					alert(ctx.error.message);
+					setError(ctx.error.message);
 				},
 			},
 		);
 	};
 
 	const handleGoogleSignIn = async () => {
+		clearMessages();
 		await authClient.signIn.social(
 			{
 				provider: "google",
+				callbackURL: "/dashboard",
+				errorCallbackURL: "/sign-in",
 			},
 			{
 				onRequest: () => {
 					setOtpLoading(true);
 				},
-				onSuccess: () => {
-					setOtpLoading(false);
-				},
+				onResponse: () => setOtpLoading(false),
 				onError: (ctx) => {
-					setOtpLoading(false);
-					alert(ctx.error.message);
+					setError(ctx.error.message);
 				},
 			},
 		);
 	};
 
-	const handleOtpSignIn = async () => {
-		if (!otpSent) {
-			await authClient.emailOtp.sendVerificationOtp(
-				{
-					email,
-					type: "sign-in",
-				},
-				{
-					onRequest: () => {
-						setOtpLoading(true);
-					},
-					onSuccess: () => {
-						setOtpLoading(false);
-						setOtpSent(true);
-					},
-					onError: (ctx) => {
-						setOtpLoading(false);
-						alert(ctx.error.message);
-					},
-				},
-			);
-		} else {
-			await authClient.signIn.emailOtp(
-				{
-					email,
-					otp,
-				},
-				{
-					onRequest: () => {
-						setOtpLoading(true);
-					},
-					onSuccess: () => {
-						setOtpLoading(false);
-						router.push("/dashboard");
-					},
-					onError: (ctx) => {
-						setOtpLoading(false);
-						alert(ctx.error.message);
-					},
-				},
-			);
-		}
-	};
 	return (
 		<div className="flex min-h-screen w-full items-center justify-center p-4">
 			<div className="w-full max-w-md">
@@ -185,13 +178,25 @@ export default function SignInPage() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
+						{error && (
+							<Alert variant="destructive" className="mb-4">
+								<AlertCircle className="h-4 w-4" />
+								<AlertDescription>{error}</AlertDescription>
+							</Alert>
+						)}
+
+						{success && (
+							<Alert className="mb-4 border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
+								<CheckCircle2 className="h-4 w-4" />
+								<AlertDescription>{success}</AlertDescription>
+							</Alert>
+						)}
+
 						<form
 							onSubmit={(e) => {
 								e.preventDefault();
 								if (signInMethod === "password") {
 									handleSignIn();
-								} else if (otpSent) {
-									handleOtpSignIn();
 								}
 							}}
 							className="grid gap-4"
@@ -205,6 +210,7 @@ export default function SignInPage() {
 									required
 									onChange={(e) => {
 										setEmail(e.target.value);
+										clearMessages();
 									}}
 									value={email}
 								/>
@@ -235,24 +241,10 @@ export default function SignInPage() {
 										autoComplete="password"
 										required
 										value={password}
-										onChange={(e) => setPassword(e.target.value)}
-									/>
-								</div>
-							)}
-
-							{signInMethod === "passwordless" && otpSent && (
-								<div className="grid gap-2">
-									<Label htmlFor="otp">Verification Code</Label>
-									<Input
-										id="otp"
-										type="text"
-										placeholder="Enter verification code"
-										required
-										value={otp}
-										onChange={(e) => setOtp(e.target.value)}
-										pattern="[0-9]*"
-										inputMode="numeric"
-										maxLength={6}
+										onChange={(e) => {
+											setPassword(e.target.value);
+											clearMessages();
+										}}
 									/>
 								</div>
 							)}
@@ -264,49 +256,23 @@ export default function SignInPage() {
 										className="w-full"
 										disabled={otpLoading}
 									>
+										{otpLoading ? (
+											<Loader2 size={16} className="mr-2 animate-spin" />
+										) : null}
 										Sign in with Password
 									</Button>
 								)}
-								{signInMethod === "passwordless" && !otpSent && (
-									<div className="flex flex-col gap-2">
-										<Button
-											type="button"
-											className="w-full"
-											disabled={magicLinkLoading || otpLoading}
-											onClick={handleMagicLinkSignIn}
-										>
-											{magicLinkLoading ? (
-												<Loader2 size={16} className="animate-spin" />
-											) : (
-												"Send Magic Link"
-											)}
-										</Button>
-										<Button
-											type="button"
-											className="w-full"
-											variant="outline"
-											disabled={magicLinkLoading || otpLoading}
-											onClick={handleOtpSignIn}
-										>
-											{otpLoading ? (
-												<Loader2 size={16} className="animate-spin" />
-											) : (
-												"Send Verification Code"
-											)}
-										</Button>
-									</div>
-								)}
-								{signInMethod === "passwordless" && otpSent && (
+								{signInMethod === "passwordless" && (
 									<Button
-										type="submit"
+										type="button"
 										className="w-full"
-										disabled={otpLoading}
+										disabled={magicLinkLoading || otpLoading}
+										onClick={handleMagicLinkSignIn}
 									>
-										{otpLoading ? (
-											<Loader2 size={16} className="animate-spin" />
-										) : (
-											"Verify Code"
-										)}
+										{magicLinkLoading ? (
+											<Loader2 size={16} className="mr-2 animate-spin" />
+										) : null}
+										Send Magic Link
 									</Button>
 								)}
 
@@ -319,12 +285,11 @@ export default function SignInPage() {
 											signInMethod === "password" ? "passwordless" : "password",
 										);
 										setPassword("");
-										setOtp("");
-										setOtpSent(false);
+										clearMessages();
 									}}
 								>
 									{signInMethod === "password"
-										? "Sign in with magic link or OTP instead"
+										? "Sign in with magic link"
 										: "Sign in with a password instead"}
 								</Button>
 							</div>
@@ -397,21 +362,6 @@ export default function SignInPage() {
 							</Button>
 						</form>
 					</CardContent>
-					<CardFooter>
-						<div className="flex w-full justify-center border-t py-4">
-							<p className="text-center text-neutral-500 text-xs">
-								Powered by{" "}
-								<a
-									href="https://better-auth.com"
-									className="underline"
-									target="_blank"
-									rel="noopener"
-								>
-									<span className="dark:text-orange-200/90">better-auth.</span>
-								</a>
-							</p>
-						</div>
-					</CardFooter>
 				</Card>
 				<p className="mt-4 text-center text-neutral-600 text-sm dark:text-neutral-400">
 					Don&apos;t have an account?{" "}
