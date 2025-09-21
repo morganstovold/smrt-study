@@ -11,7 +11,6 @@ import { getToken } from "@/lib/auth-server";
 import { AppSidebarFooter } from "./sidebar-footer";
 import { SidebarItems } from "./sidebar-items";
 import { AppSidebarLogo } from "./sidebar-logo";
-import SidebarSecondary from "./sidebar-secondary";
 
 export default async function AppSidebar({
 	children,
@@ -36,7 +35,6 @@ export default async function AppSidebar({
 				<AppSidebarLogo />
 				<SidebarContent>
 					<SidebarItems />
-					<SidebarSecondary />
 				</SidebarContent>
 				<AppSidebarFooter preloaded={preloadedUserQuery} />
 			</Sidebar>

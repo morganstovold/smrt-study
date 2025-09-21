@@ -4,32 +4,9 @@ import { v } from "convex/values";
 export default defineSchema({
 	users: defineTable({
 		userId: v.string(),
-		onboardingCompleted: v.boolean(),
-		studyPreferences: v.object({
-			preferredQuestionTypes: v.array(
-				v.union(
-					v.literal("flashcard"),
-					v.literal("multiple_choice"),
-					v.literal("short_answer"),
-					v.literal("matching"),
-					v.literal("fill_in_blank"),
-				),
-			),
-			reminderSettings: v.object({
-				enabled: v.boolean(),
-				time: v.string(), // "14:30" format
-				frequency: v.union(
-					v.literal("daily"),
-					v.literal("weekdays"),
-					v.literal("custom"),
-				),
-			}),
-		}),
+		marketingEmails: v.boolean(),
 
 		profile: v.object({
-			avatar: v.optional(v.string()), // file storage ID or URL
-			timezone: v.string(),
-			language: v.string(),
 			level: v.number(), // gamification level
 			experiencePoints: v.number(),
 			streak: v.object({
@@ -37,7 +14,6 @@ export default defineSchema({
 				longest: v.number(),
 				lastStudyDate: v.optional(v.number()),
 			}),
-			// Local usage stats for dashboard (not billing)
 			stats: v.object({
 				totalStudySessions: v.number(),
 				totalStudyTime: v.number(), // minutes
@@ -49,10 +25,7 @@ export default defineSchema({
 		createdAt: v.number(),
 		updatedAt: v.number(),
 		lastActiveAt: v.number(),
-	})
-		.index("by_auth_user_id", ["userId"])
-		.index("by_onboarding", ["onboardingCompleted"])
-		.index("by_last_active", ["lastActiveAt"]),
+	}).index("by_user_id", ["userId"]),
 
 	studySets: defineTable({
 		title: v.string(),
@@ -215,44 +188,6 @@ export default defineSchema({
 		.index("by_user_and_set", ["userId", "studySetId"])
 		.index("by_status", ["status"])
 		.index("by_last_active", ["lastActiveAt"]),
-
-	onboardingState: defineTable({
-		userId: v.id("users"),
-
-		// Onboarding steps
-		steps: v.object({
-			welcome: v.boolean(),
-			preferences: v.boolean(),
-			planSelection: v.boolean(),
-			firstStudySet: v.boolean(),
-			firstStudySession: v.boolean(),
-		}),
-
-		// Onboarding data collection
-		surveyResponses: v.object({
-			studyGoals: v.array(v.string()), // "academic", "professional", "personal"
-			currentLevel: v.string(), // "student", "professional", "educator"
-			timeCommitment: v.string(), // "15min", "30min", "1hour", "2hour+"
-			preferredLearningStyle: v.array(v.string()), // "visual", "auditory", "kinesthetic", "reading"
-			subjects: v.array(v.string()),
-		}),
-
-		// A/B testing
-		cohort: v.string(), // for onboarding experiments
-		variant: v.string(), // specific variant within cohort
-
-		// Progress tracking
-		currentStep: v.string(),
-		completedAt: v.optional(v.number()),
-		abandonedAt: v.optional(v.number()),
-		timeSpent: v.number(), // total onboarding time in seconds
-
-		createdAt: v.number(),
-		updatedAt: v.number(),
-	})
-		.index("by_user", ["userId"])
-		.index("by_current_step", ["currentStep"])
-		.index("by_cohort", ["cohort"]),
 
 	analyticsEvents: defineTable({
 		userId: v.optional(v.id("users")),

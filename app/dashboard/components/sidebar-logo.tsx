@@ -1,4 +1,6 @@
-import { LibraryBigIcon } from "lucide-react";
+"use client";
+
+import { LibrarySquareIcon } from "lucide-react";
 import Link from "next/link";
 import {
 	SidebarHeader,
@@ -9,17 +11,16 @@ import {
 
 export function AppSidebarLogo() {
 	return (
-		<SidebarHeader>
+		<SidebarHeader className="p-0">
 			<SidebarMenu>
 				<SidebarMenuItem>
 					{/* display smrtStudy and a book icon. this will be the main application logo so make it look clean */}
-					<SidebarMenuButton
-						asChild
-						className="data-[slot=sidebar-menu-button]:!p-1.5"
-					>
-						<Link href="/dashboard">
-							<LibraryBigIcon className="!size-5" />
-							<span className="font-semibold text-base">SmrtStudy</span>
+					<SidebarMenuButton asChild className="h-(--header-height) p-4 px-2">
+						<Link href="/dashboard" className="flex items-center gap-3">
+							<div className="flex items-center justify-center rounded-sm bg-gradient-to-br from-violet-400 to-violet-900 p-1 text-white shadow-2xl">
+								<LibrarySquareIcon className="!size-7" />
+							</div>
+							<span className="font-semibold text-xl">SmrtStudy</span>
 						</Link>
 					</SidebarMenuButton>
 				</SidebarMenuItem>

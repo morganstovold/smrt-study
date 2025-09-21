@@ -17,7 +17,7 @@ export default function AuthButtons() {
 	}
 
 	return (
-		<main className="flex flex-col items-center justify-center">
+		<main className="flex items-center justify-center gap-4">
 			<Authenticated>
 				<button
 					type="button"
@@ -34,6 +34,13 @@ export default function AuthButtons() {
 						"Sign out"
 					)}
 				</button>
+				{/* dashboard */}
+				<Link
+					href="/dashboard"
+					className={buttonVariants({ variant: "outline" })}
+				>
+					Dashboard
+				</Link>
 			</Authenticated>
 			<Unauthenticated>
 				<Link

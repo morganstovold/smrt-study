@@ -1,9 +1,14 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
+import {
+	BookOpenIcon,
+	HomeIcon,
+	PlayIcon,
+	RefreshCwIcon,
+	TimerIcon,
+} from "lucide-react";
 import Link from "next/link";
 import {
 	SidebarGroup,
 	SidebarGroupContent,
-	SidebarGroupLabel,
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
@@ -11,36 +16,35 @@ import {
 
 const items = [
 	{
-		title: "Home",
-		url: "#",
-		icon: Home,
+		title: "Dashboard",
+		url: "/dashboard",
+		icon: HomeIcon,
 	},
 	{
-		title: "Inbox",
-		url: "#",
-		icon: Inbox,
+		title: "Study Sets",
+		url: "/dashboard/study-sets",
+		icon: BookOpenIcon,
 	},
 	{
-		title: "Calendar",
-		url: "#",
-		icon: Calendar,
+		title: "Practice",
+		url: "/dashboard/practice-mode",
+		icon: PlayIcon,
 	},
 	{
-		title: "Search",
-		url: "#",
-		icon: Search,
+		title: "Quiz",
+		url: "/dashboard/quiz-mode",
+		icon: TimerIcon,
 	},
 	{
-		title: "Settings",
-		url: "#",
-		icon: Settings,
+		title: "Review",
+		url: "/dashboard/review-mode",
+		icon: RefreshCwIcon,
 	},
 ];
 
 export function SidebarItems() {
 	return (
-		<SidebarGroup>
-			<SidebarGroupLabel>Application</SidebarGroupLabel>
+		<SidebarGroup className="border-t">
 			<SidebarGroupContent>
 				<SidebarMenu>
 					{items.map((item) => (

@@ -3,6 +3,7 @@ import { convex } from "@convex-dev/better-auth/plugins";
 import { requireMutationCtx } from "@convex-dev/better-auth/utils";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { magicLink } from "better-auth/plugins";
+import { passkey } from "better-auth/plugins/passkey";
 import { components } from "./_generated/api";
 import type { DataModel } from "./_generated/dataModel";
 import { type QueryCtx, query } from "./_generated/server";
@@ -70,13 +71,16 @@ export const createAuth = (
 		},
 		plugins: [
 			magicLink({
-				disableSignUp: true,
-				
 				sendMagicLink: async ({ email, url }) => {
 					await sendMagicLink(requireMutationCtx(ctx), {
 						to: email,
 						url,
 					});
+				},
+			}),
+			passkey({
+				authenticatorSelection: {
+					authenticatorAttachment: "platform",
 				},
 			}),
 			convex(),

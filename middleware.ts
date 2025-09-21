@@ -1,13 +1,8 @@
 import { getSessionCookie } from "better-auth/cookies";
 import { type NextRequest, NextResponse } from "next/server";
 
-const signInRoutes = [
-	"/sign-in",
-	"/sign-up",
-	"/verify-email",
-	"/reset-password",
-];
-const protectedRoutes = ["/dashboard"];
+const signInRoutes = ["/sign-in", "/magic-link"];
+const protectedRoutes = ["/dashboard", "/setup-profile"];
 
 export default async function middleware(request: NextRequest) {
 	const sessionCookie = getSessionCookie(request);
@@ -21,7 +16,7 @@ export default async function middleware(request: NextRequest) {
 	}
 
 	if (isSignInRoute && sessionCookie) {
-		return NextResponse.redirect(new URL("/dashboard", request.url));
+		// return NextResponse.redirect(new URL("/dashboard", request.url));
 	}
 
 	return NextResponse.next();

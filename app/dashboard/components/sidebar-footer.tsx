@@ -2,13 +2,18 @@
 
 import { type Preloaded, usePreloadedQuery } from "convex/react";
 import {
+	BadgeQuestionMarkIcon,
+	CogIcon,
 	CreditCardIcon,
 	EllipsisVerticalIcon,
 	LogOutIcon,
+	MoonIcon,
 	UserCircleIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -26,8 +31,23 @@ import {
 	SidebarMenuItem,
 	useSidebar,
 } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import type { api } from "@/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
+
+const items = [
+	{
+		title: "Settings",
+		url: "/dashboard/settings",
+		icon: CogIcon,
+	},
+	{
+		title: "Get Help",
+		url: "/help",
+		icon: BadgeQuestionMarkIcon,
+	},
+];
 
 export function AppSidebarFooter({
 	preloaded,
@@ -37,9 +57,46 @@ export function AppSidebarFooter({
 	const { isMobile } = useSidebar();
 	const router = useRouter();
 	const user = usePreloadedQuery(preloaded);
+	const { resolvedTheme, setTheme } = useTheme();
+	const [mounted, setMounted] = useState(false);
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
 
 	return (
 		<SidebarFooter>
+			<SidebarMenu>
+				{items.map((item) => (
+					<SidebarMenuItem key={item.title}>
+						<SidebarMenuButton asChild>
+							<Link href={item.url}>
+								<item.icon />
+								<span>{item.title}</span>
+							</Link>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+				))}
+				<SidebarMenuItem className="group-data-[collapsible=icon]:hidden">
+					<SidebarMenuButton asChild>
+						<label>
+							<MoonIcon />
+							<span>Dark Mode</span>
+							{mounted ? (
+								<Switch
+									className="ml-auto"
+									checked={resolvedTheme !== "light"}
+									onCheckedChange={() =>
+										setTheme(resolvedTheme === "dark" ? "light" : "dark")
+									}
+								/>
+							) : (
+								<Skeleton className="ml-auto h-4 w-8 rounded-full" />
+							)}
+						</label>
+					</SidebarMenuButton>
+				</SidebarMenuItem>
+			</SidebarMenu>
 			<SidebarMenu>
 				<SidebarMenuItem>
 					<DropdownMenu>
@@ -108,6 +165,12 @@ export function AppSidebarFooter({
 									<Link href="/dashboard/settings/billing">
 										<CreditCardIcon />
 										Billing
+									</Link>
+								</DropdownMenuItem>
+								<DropdownMenuItem asChild>
+									<Link href="/help">
+										<BadgeQuestionMarkIcon />
+										Help
 									</Link>
 								</DropdownMenuItem>
 							</DropdownMenuGroup>
