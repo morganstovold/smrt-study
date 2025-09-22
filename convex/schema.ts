@@ -3,14 +3,10 @@ import { v } from "convex/values";
 
 export default defineSchema({
 	studySets: defineTable({
+		userId: v.string(),
 		title: v.string(),
 		description: v.optional(v.string()),
 		subject: v.string(),
-		difficulty: v.union(
-			v.literal("beginner"),
-			v.literal("intermediate"),
-			v.literal("advanced"),
-		),
 
 		sources: v.array(
 			v.object({
@@ -57,24 +53,6 @@ export default defineSchema({
 			}),
 		),
 
-		analytics: v.object({
-			totalQuestions: v.number(),
-			averageDifficulty: v.number(),
-			completionRate: v.number(), // average across all users
-			averageScore: v.number(),
-			timesStudied: v.number(),
-		}),
-
-		createdBy: v.string(),
-		isPublic: v.boolean(),
-		isTemplate: v.boolean(), // featured/template study sets
-		collaborators: v.array(
-			v.object({
-				userId: v.string(),
-				role: v.union(v.literal("viewer"), v.literal("editor")),
-			}),
-		),
-
 		status: v.union(
 			v.literal("draft"),
 			v.literal("processing"),
@@ -82,23 +60,12 @@ export default defineSchema({
 			v.literal("error"),
 		),
 
-		processingStatus: v.optional(
-			v.object({
-				stage: v.string(), // "extracting", "generating_questions", "optimizing"
-				progress: v.number(), // 0-100
-				errorMessage: v.optional(v.string()),
-			}),
-		),
-
-		// Metadata
 		createdAt: v.number(),
 		updatedAt: v.number(),
 	})
-		.index("by_creator", ["createdBy"])
-		.index("by_public", ["isPublic"])
+		.index("by_user", ["userId"])
 		.index("by_subject", ["subject"])
 		.index("by_status", ["status"])
-		.index("by_template", ["isTemplate"])
 		.index("by_created_at", ["createdAt"]),
 
 	studySessions: defineTable({

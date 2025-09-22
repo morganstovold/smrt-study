@@ -1,8 +1,8 @@
+import { Loader2 } from "lucide-react";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { SidebarHeader } from "../components/sidebar-header";
-import { StudySetDataTable } from "./data-table";
 
-export default async function DashboardPage() {
+export default function Loading() {
 	return (
 		<SidebarInset>
 			<SidebarHeader
@@ -17,8 +17,8 @@ export default async function DashboardPage() {
 					},
 				]}
 			/>
-			<div className="flex flex-1 flex-col px-6 py-4">
-				<StudySetDataTable />
+			<div className="flex flex-1 flex-col items-center justify-center">
+				<Loader2 className="size-6 animate-spin text-primary" />
 			</div>
 		</SidebarInset>
 	);

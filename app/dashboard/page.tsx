@@ -1,9 +1,9 @@
-import AppSidebar from "./components/app-sidebar";
+import { SidebarInset } from "@/components/ui/sidebar";
 import { SidebarHeader } from "./components/sidebar-header";
 
 export default async function DashboardPage() {
 	return (
-		<AppSidebar>
+		<SidebarInset>
 			<SidebarHeader
 				breadcrumbs={[
 					{
@@ -15,6 +15,6 @@ export default async function DashboardPage() {
 			<div className="flex flex-1 flex-col">
 				<div>Dashboard</div>
 			</div>
-		</AppSidebar>
+		</SidebarInset>
 	);
 }
