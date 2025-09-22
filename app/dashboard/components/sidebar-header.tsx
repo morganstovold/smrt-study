@@ -1,5 +1,6 @@
 import { GithubIcon } from "lucide-react";
 import Link from "next/link";
+import { Fragment } from "react";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -28,18 +29,20 @@ export function SidebarHeader({ breadcrumbs }: SidebarContentHeaderProps) {
 				<Breadcrumb>
 					<BreadcrumbList>
 						{breadcrumbs.map((breadcrumb, index) => (
-							<BreadcrumbItem key={index}>
+							<Fragment key={index}>
 								{index > 0 && (
 									<BreadcrumbSeparator className="mx-2 data-[orientation=vertical]:h-4" />
 								)}
-								{breadcrumb.url ? (
-									<BreadcrumbLink href={breadcrumb.url}>
-										{breadcrumb.label}
-									</BreadcrumbLink>
-								) : (
-									<BreadcrumbPage>{breadcrumb.label}</BreadcrumbPage>
-								)}
-							</BreadcrumbItem>
+								<BreadcrumbItem>
+									{breadcrumb.url ? (
+										<BreadcrumbLink href={breadcrumb.url}>
+											{breadcrumb.label}
+										</BreadcrumbLink>
+									) : (
+										<BreadcrumbPage>{breadcrumb.label}</BreadcrumbPage>
+									)}
+								</BreadcrumbItem>
+							</Fragment>
 						))}
 					</BreadcrumbList>
 				</Breadcrumb>

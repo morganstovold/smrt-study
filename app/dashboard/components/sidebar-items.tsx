@@ -1,10 +1,4 @@
-import {
-	BookOpenIcon,
-	HomeIcon,
-	PlayIcon,
-	RefreshCwIcon,
-	TimerIcon,
-} from "lucide-react";
+import { BookOpenIcon, HomeIcon } from "lucide-react";
 import Link from "next/link";
 import {
 	SidebarGroup,
@@ -24,21 +18,6 @@ const items = [
 		title: "Study Sets",
 		url: "/dashboard/study-sets",
 		icon: BookOpenIcon,
-	},
-	{
-		title: "Practice",
-		url: "/dashboard/practice-mode",
-		icon: PlayIcon,
-	},
-	{
-		title: "Quiz",
-		url: "/dashboard/quiz-mode",
-		icon: TimerIcon,
-	},
-	{
-		title: "Review",
-		url: "/dashboard/review-mode",
-		icon: RefreshCwIcon,
 	},
 ];
 

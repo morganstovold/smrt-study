@@ -1,71 +1,56 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation } from "./_generated/server";
 import { authComponent, createAuth } from "./auth";
-
-export const getUserProfile = query({
-	args: {},
-	handler: async (ctx) => {
-		const user = await ctx.auth.getUserIdentity();
-
-		if (!user) return "UNAUTHORIZED";
-
-		const profile = await ctx.db
-			.query("users")
-			.withIndex("by_user_id", (q) => q.eq("userId", user.subject))
-			.unique();
-
-		return profile;
-	},
-});
+import { r2 } from "./pfp";
 
 export const editUserProfile = mutation({
 	args: v.object({
 		name: v.optional(v.string()),
 		marketingEmails: v.optional(v.boolean()),
+		imageKey: v.optional(v.string()),
 	}),
 	handler: async (ctx, args) => {
-		const user = await ctx.auth.getUserIdentity();
+		const auth = createAuth(ctx).api;
 
-		if (!user) return "UNAUTHORIZED";
+		const userSession = await auth.getSession({
+			headers: await authComponent.getHeaders(ctx),
+		});
 
-		const profile = await ctx.db
-			.query("users")
-			.withIndex("by_user_id", (q) => q.eq("userId", user.subject))
-			.unique();
+		if (!userSession || !userSession.user) return "UNAUTHORIZED";
 
-		if (!profile) {
-			await ctx.db.insert("users", {
-				userId: user.subject,
-				marketingEmails: args.marketingEmails ?? false,
-				profile: {
-					level: 1,
-					experiencePoints: 0,
-					streak: {
-						current: 0,
-						longest: 0,
-						lastStudyDate: undefined,
-					},
-					stats: {
-						totalStudySessions: 0,
-						totalStudyTime: 0,
-						totalQuestionsAnswered: 0,
-						averageScore: 0,
-					},
-				},
-				createdAt: Date.now(),
-				updatedAt: Date.now(),
-				lastActiveAt: Date.now(),
-			});
-		} else {
-			await ctx.db.patch(profile._id, {
-				marketingEmails: args.marketingEmails ?? false,
-			});
+		const user = userSession.user;
+
+		let imageUrl: string | undefined;
+
+		if (args.imageKey) {
+			try {
+				imageUrl = await r2.getUrl(args.imageKey);
+
+				// Delete old profile image if it exists
+				if (
+					user.currentProfileImageKey &&
+					user.currentProfileImageKey !== args.imageKey
+				) {
+					try {
+						await r2.deleteObject(ctx, user.currentProfileImageKey);
+					} catch (deleteError) {
+						console.error("Failed to delete old profile image:", deleteError);
+					}
+				}
+			} catch (error) {
+				console.error("Invalid image key:", error);
+				return "INVALID_IMAGE";
+			}
 		}
 
-		await createAuth(ctx).api.updateUser({
+		await auth.updateUser({
 			headers: await authComponent.getHeaders(ctx),
 			body: {
 				name: args.name,
+				marketingEmails: args.marketingEmails,
+				currentProfileImageKey: args.imageKey,
+				image: imageUrl,
+				onboardingCompleted: true,
 			},
 		});
 

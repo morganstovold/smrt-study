@@ -2,31 +2,6 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-	users: defineTable({
-		userId: v.string(),
-		marketingEmails: v.boolean(),
-
-		profile: v.object({
-			level: v.number(), // gamification level
-			experiencePoints: v.number(),
-			streak: v.object({
-				current: v.number(),
-				longest: v.number(),
-				lastStudyDate: v.optional(v.number()),
-			}),
-			stats: v.object({
-				totalStudySessions: v.number(),
-				totalStudyTime: v.number(), // minutes
-				totalQuestionsAnswered: v.number(),
-				averageScore: v.number(),
-			}),
-		}),
-
-		createdAt: v.number(),
-		updatedAt: v.number(),
-		lastActiveAt: v.number(),
-	}).index("by_user_id", ["userId"]),
-
 	studySets: defineTable({
 		title: v.string(),
 		description: v.optional(v.string()),
@@ -90,12 +65,12 @@ export default defineSchema({
 			timesStudied: v.number(),
 		}),
 
-		createdBy: v.id("users"),
+		createdBy: v.string(),
 		isPublic: v.boolean(),
 		isTemplate: v.boolean(), // featured/template study sets
 		collaborators: v.array(
 			v.object({
-				userId: v.id("users"),
+				userId: v.string(),
 				role: v.union(v.literal("viewer"), v.literal("editor")),
 			}),
 		),
@@ -127,7 +102,7 @@ export default defineSchema({
 		.index("by_created_at", ["createdAt"]),
 
 	studySessions: defineTable({
-		userId: v.id("users"),
+		userId: v.string(),
 		studySetId: v.id("studySets"),
 
 		// Session configuration
@@ -190,7 +165,7 @@ export default defineSchema({
 		.index("by_last_active", ["lastActiveAt"]),
 
 	analyticsEvents: defineTable({
-		userId: v.optional(v.id("users")),
+		userId: v.optional(v.string()),
 		eventType: v.string(), // "study_session_completed", "question_answered", "streak_achieved"
 		eventData: v.any(),
 		sessionId: v.optional(v.string()),

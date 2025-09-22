@@ -40,24 +40,46 @@ export function AuthMagicLinkSent() {
 					</Link>
 				</motion.div>
 
-				<div className="absolute bottom-10">
-					<div className="flex items-center justify-center gap-6 font-mono text-xs">
-						<span className="text-muted-foreground">
+				<div className="absolute bottom-15">
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ delay: 0.3, duration: 0.8 }}
+						className="flex items-center justify-center gap-6 font-mono text-xs"
+					>
+						<motion.span
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							transition={{ delay: 0.4, duration: 0.8 }}
+							className="text-muted-foreground"
+						>
 							{SITE_INFO.name} © {new Date().getFullYear()}
-						</span>
-						<Link
-							className="text-muted-foreground hover:underline"
-							href="/terms"
+						</motion.span>
+						<motion.span
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							transition={{ delay: 0.6, duration: 0.8 }}
 						>
-							Terms of Service
-						</Link>
-						<Link
-							className="text-muted-foreground hover:underline"
-							href="/privacy"
+							<Link
+								href="/terms"
+								className="text-muted-foreground hover:underline"
+							>
+								Terms of Service
+							</Link>
+						</motion.span>
+						<motion.span
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							transition={{ delay: 0.8, duration: 0.8 }}
 						>
-							Privacy Policy
-						</Link>
-					</div>
+							<Link
+								href="/privacy"
+								className="text-muted-foreground hover:underline"
+							>
+								Privacy Policy
+							</Link>
+						</motion.span>
+					</motion.div>
 				</div>
 			</div>
 

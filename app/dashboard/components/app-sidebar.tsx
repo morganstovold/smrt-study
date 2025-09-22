@@ -1,5 +1,6 @@
-import { preloadQuery } from "convex/nextjs";
+import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import {
 	Sidebar,
 	SidebarContent,
@@ -28,6 +29,12 @@ export default async function AppSidebar({
 		{},
 		{ token },
 	);
+
+	const user = preloadedQueryResult(preloadedUserQuery);
+
+	if (!user?.onboardingCompleted) {
+		redirect("/setup-profile");
+	}
 
 	return (
 		<SidebarProvider defaultOpen={defaultOpen}>

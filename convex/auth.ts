@@ -7,16 +7,23 @@ import { passkey } from "better-auth/plugins/passkey";
 import { components } from "./_generated/api";
 import type { DataModel } from "./_generated/dataModel";
 import { type QueryCtx, query } from "./_generated/server";
+import authSchema from "./betterAuth/schema";
 import {
 	sendEmailVerification,
 	sendMagicLink,
 	sendResetPassword,
 } from "./email";
 
-// biome-ignore lint/style/noNonNullAssertion: false positive
-const siteUrl = process.env.SITE_URL!;
+const siteUrl = process.env.SITE_URL;
 
-export const authComponent = createClient<DataModel>(components.betterAuth);
+export const authComponent = createClient<DataModel, typeof authSchema>(
+	components.betterAuth,
+	{
+		local: {
+			schema: authSchema,
+		},
+	},
+);
 
 export const createAuth = (
 	ctx: GenericCtx<DataModel>,
@@ -37,6 +44,23 @@ export const createAuth = (
 		user: {
 			deleteUser: {
 				enabled: true,
+			},
+			additionalFields: {
+				marketingEmails: {
+					type: "boolean",
+					defaultValue: false,
+					required: false,
+				},
+				currentProfileImageKey: {
+					type: "string",
+					defaultValue: null,
+					required: false,
+				},
+				onboardingCompleted: {
+					type: "boolean",
+					defaultValue: false,
+					required: false,
+				},
 			},
 		},
 		emailVerification: {

@@ -1,11 +1,13 @@
 "use client";
 
+import { useUploadFile } from "@convex-dev/r2/react";
 import { useMutation } from "convex/react";
-import { LibrarySquareIcon, Loader2 } from "lucide-react";
+import { LibrarySquareIcon, Loader2, Upload, User } from "lucide-react";
 import { motion } from "motion/react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -22,6 +24,43 @@ export function AuthSetupProfile() {
 	const [error, setError] = useState<string | null>(null);
 	const editUserProfile = useMutation(api.users.editUserProfile);
 
+	const fileInputRef = useRef<HTMLInputElement>(null);
+	const [selectedImage, setSelectedImage] = useState<File | null>(null);
+	const [imagePreview, setImagePreview] = useState<string | null>(null);
+	const [uploadingImage, setUploadingImage] = useState(false);
+	const uploadFile = useUploadFile(api.pfp);
+
+	const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		if (file) {
+			// Validate file type
+			if (!file.type.startsWith("image/")) {
+				setError("Please select an image file");
+				return;
+			}
+
+			// Validate file size (5MB max)
+			if (file.size > 5 * 1024 * 1024) {
+				setError("Image must be less than 5MB");
+				return;
+			}
+
+			setSelectedImage(file);
+			setError(null);
+
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				setImagePreview(e.target?.result as string);
+			};
+			reader.readAsDataURL(file);
+		}
+	};
+
+	const handleImageRemove = () => {
+		setSelectedImage(null);
+		setImagePreview(null);
+	};
+
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
@@ -34,9 +73,26 @@ export function AuthSetupProfile() {
 		setLoading(true);
 
 		try {
+			let profileImageKey: string | undefined;
+
+			if (selectedImage) {
+				setUploadingImage(true);
+				try {
+					const uploadResult = await uploadFile(selectedImage);
+					profileImageKey = uploadResult;
+				} catch (uploadError) {
+					console.error("Error uploading image:", uploadError);
+					setError("Failed to upload profile image");
+					return;
+				} finally {
+					setUploadingImage(false);
+				}
+			}
+
 			const result = await editUserProfile({
 				name: `${firstName} ${lastName}`,
 				marketingEmails,
+				imageKey: profileImageKey,
 			});
 
 			if (result !== "SUCCESS") {
@@ -62,7 +118,7 @@ export function AuthSetupProfile() {
 					transition={{ duration: 0.6 }}
 					className="w-full max-w-md space-y-10"
 				>
-					<div className="space-y-2 text-center">
+					<div className="space-y-2">
 						<h1 className="text-3xl text-foreground sm:text-4xl">
 							Complete Your Profile
 						</h1>
@@ -70,8 +126,82 @@ export function AuthSetupProfile() {
 							Let's personalize your {SITE_INFO.name} experience
 						</p>
 					</div>
+
 					<div className="w-full space-y-6">
 						<form onSubmit={handleSubmit} className="space-y-6 text-left">
+							<div className="flex items-center gap-6">
+								<button
+									type="button"
+									className="group relative h-24 w-24 cursor-pointer rounded-lg border-2 border-muted-foreground/25 border-dashed transition-colors hover:border-primary/50"
+									onClick={() => fileInputRef.current?.click()}
+								>
+									{imagePreview ? (
+										<Image
+											src={imagePreview}
+											alt="Profile preview"
+											width={96}
+											height={96}
+											className="h-full w-full rounded-lg object-cover"
+										/>
+									) : (
+										<div className="flex h-full w-full items-center justify-center rounded-lg bg-muted/30 transition-colors group-hover:bg-muted/50">
+											<User className="h-8 w-8 text-muted-foreground" />
+										</div>
+									)}
+
+									{/* Upload overlay */}
+									<div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+										<Upload className="h-5 w-5 text-white" />
+									</div>
+								</button>
+
+								<input
+									ref={fileInputRef}
+									type="file"
+									accept="image/*"
+									onChange={handleImageSelect}
+									className="hidden"
+								/>
+
+								<div className="flex flex-col items-start gap-4">
+									<div className="text-muted-foreground text-sm">
+										Add or change your profile photo
+									</div>
+									<div className="flex gap-2">
+										<Button
+											type="button"
+											variant="outline"
+											size="sm"
+											onClick={() => fileInputRef.current?.click()}
+											disabled={uploadingImage}
+										>
+											{uploadingImage ? (
+												<>
+													<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+													Uploading...
+												</>
+											) : (
+												<>
+													<Upload className="mr-2 h-4 w-4" />
+													{selectedImage ? "Change Photo" : "Add Photo"}
+												</>
+											)}
+										</Button>
+										{/* remove image */}
+										{selectedImage && (
+											<Button
+												type="button"
+												size="sm"
+												variant="destructive"
+												onClick={() => handleImageRemove()}
+											>
+												Remove Photo
+											</Button>
+										)}
+									</div>
+								</div>
+							</div>
+
 							<div className="grid grid-cols-2 gap-4">
 								<div className="space-y-4">
 									<Label htmlFor="firstName">First Name</Label>
@@ -111,7 +241,11 @@ export function AuthSetupProfile() {
 								</Label>
 							</div>
 
-							<Button type="submit" className="w-full" disabled={loading}>
+							<Button
+								type="submit"
+								className="w-full"
+								disabled={loading || uploadingImage}
+							>
 								{loading ? (
 									<motion.div
 										initial={{ opacity: 0 }}
@@ -143,49 +277,47 @@ export function AuthSetupProfile() {
 					</div>
 				</motion.div>
 
-				<motion.div
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ delay: 0.4, duration: 0.8 }}
-					className="absolute bottom-10"
-				>
-					<div className="flex items-center justify-center gap-6 font-mono text-xs">
+				<div className="absolute bottom-15">
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ delay: 0.3, duration: 0.8 }}
+						className="flex items-center justify-center gap-6 font-mono text-xs"
+					>
 						<motion.span
-							initial={{ opacity: 0, y: 10 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.4, duration: 0.4 }}
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							transition={{ delay: 0.4, duration: 0.8 }}
 							className="text-muted-foreground"
 						>
 							{SITE_INFO.name} © {new Date().getFullYear()}
 						</motion.span>
 						<motion.span
-							initial={{ opacity: 0, y: 10 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.6, duration: 0.4 }}
-							className="text-muted-foreground"
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							transition={{ delay: 0.6, duration: 0.8 }}
 						>
 							<Link
-								className="text-muted-foreground hover:underline"
 								href="/terms"
+								className="text-muted-foreground hover:underline"
 							>
 								Terms of Service
 							</Link>
 						</motion.span>
 						<motion.span
-							initial={{ opacity: 0, y: 10 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.8, duration: 0.4 }}
-							className="text-muted-foreground"
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							transition={{ delay: 0.8, duration: 0.8 }}
 						>
 							<Link
-								className="text-muted-foreground hover:underline"
 								href="/privacy"
+								className="text-muted-foreground hover:underline"
 							>
 								Privacy Policy
 							</Link>
 						</motion.span>
-					</div>
-				</motion.div>
+					</motion.div>
+				</div>
 			</div>
 
 			<motion.div
