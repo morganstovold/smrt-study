@@ -16,6 +16,8 @@ export const getStudySets = query({
 		if (!session || !session.user) {
 			return {
 				page: [],
+				isDone: false,
+				continueCursor: null,
 			};
 		}
 
