@@ -24,6 +24,7 @@ import type * as http from "../http.js";
 import type * as pfp from "../pfp.js";
 import type * as studySets from "../studySets.js";
 import type * as users from "../users.js";
+import type * as utils from "../utils.js";
 
 import type {
   ApiFromModules,
@@ -56,6 +57,7 @@ declare const fullApi: ApiFromModules<{
   pfp: typeof pfp;
   studySets: typeof studySets;
   users: typeof users;
+  utils: typeof utils;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 

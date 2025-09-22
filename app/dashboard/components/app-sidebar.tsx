@@ -1,5 +1,4 @@
 import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Sidebar, SidebarContent } from "@/components/ui/sidebar";
 import { api } from "@/convex/_generated/api";
