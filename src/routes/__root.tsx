@@ -1,3 +1,4 @@
+import { ClerkProvider } from "@clerk/tanstack-react-start";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
@@ -53,29 +54,31 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 	const theme = Route.useLoaderData();
 
 	return (
-		<html className={theme} lang="en">
-			<head>
-				<HeadContent />
-			</head>
-			<body>
-				<ThemeProvider theme={theme}>{children}</ThemeProvider>
-				<TanStackDevtools
-					config={{
-						position: "bottom-right",
-					}}
-					plugins={[
-						{
-							name: "Tanstack Router",
-							render: <TanStackRouterDevtoolsPanel />,
-						},
-						{
-							name: "React Query",
-							render: <ReactQueryDevtoolsPanel />,
-						},
-					]}
-				/>
-				<Scripts />
-			</body>
-		</html>
+		<ClerkProvider>
+			<html className={theme} lang="en">
+				<head>
+					<HeadContent />
+				</head>
+				<body>
+					<ThemeProvider theme={theme}>{children}</ThemeProvider>
+					<TanStackDevtools
+						config={{
+							position: "bottom-right",
+						}}
+						plugins={[
+							{
+								name: "Tanstack Router",
+								render: <TanStackRouterDevtoolsPanel />,
+							},
+							{
+								name: "React Query",
+								render: <ReactQueryDevtoolsPanel />,
+							},
+						]}
+					/>
+					<Scripts />
+				</body>
+			</html>
+		</ClerkProvider>
 	);
 }
