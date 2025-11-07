@@ -1,5 +1,5 @@
 [build]
-  command = "vite build"
+  command = "pnpm convex deploy --cmd 'pnpm run build'"
   dir = "dist/client"
 [dev]
   command = "vite dev"
