@@ -1,4 +1,9 @@
-import { ClerkProvider } from "@clerk/tanstack-react-start";
+import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
+import {
+	fetchSession,
+	getCookieName,
+} from "@convex-dev/better-auth/react-start";
+import type { ConvexQueryClient } from "@convex-dev/react-query";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
@@ -8,14 +13,28 @@ import {
 	Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { DefaultCatchBoundary } from "@/components/default-catch-boundary";
-import { NotFound } from "@/components/not-found";
+import { createServerFn } from "@tanstack/react-start";
+import { getCookie, getRequest } from "@tanstack/react-start/server";
+import type { ConvexReactClient } from "convex/react";
 import { ThemeProvider } from "@/components/theme-provider";
-import { getThemeServerFn } from "@/lib/theme";
+import { authClient } from "@/lib/auth-client";
+import { createAuth } from "../../convex/auth";
 import appCss from "../styles.css?url";
+
+const fetchAuth = createServerFn({ method: "GET" }).handler(async () => {
+	const { session } = await fetchSession(getRequest());
+	const sessionCookieName = getCookieName(createAuth);
+	const token = getCookie(sessionCookieName);
+	return {
+		userId: session?.user.id,
+		token,
+	};
+});
 
 export const Route = createRootRouteWithContext<{
 	queryClient: QueryClient;
+	convexClient: ConvexReactClient;
+	convexQueryClient: ConvexQueryClient;
 }>()({
 	head: () => ({
 		meta: [
@@ -37,30 +56,36 @@ export const Route = createRootRouteWithContext<{
 			},
 		],
 	}),
+	beforeLoad: async (ctx) => {
+		// all queries, mutations and action made with TanStack Query will be
+		// authenticated by an identity token.
+		const { userId, token } = await fetchAuth();
 
-	errorComponent: (props) => {
-		return (
-			<RootDocument>
-				<DefaultCatchBoundary {...props} />
-			</RootDocument>
-		);
+		// During SSR only (the only time serverHttpClient exists),
+		// set the auth token to make HTTP queries with.
+		if (token) {
+			ctx.context.convexQueryClient.serverHttpClient?.setAuth(token);
+		}
+
+		return { userId, token };
 	},
-	notFoundComponent: () => <NotFound />,
-	loader: () => getThemeServerFn(),
 	shellComponent: RootDocument,
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-	const theme = Route.useLoaderData();
+	const context = Route.useRouteContext();
 
 	return (
-		<ClerkProvider>
-			<html className={theme} lang="en">
+		<ConvexBetterAuthProvider
+			client={context.convexClient}
+			authClient={authClient}
+		>
+			<html lang="en">
 				<head>
 					<HeadContent />
 				</head>
 				<body>
-					<ThemeProvider theme={theme}>{children}</ThemeProvider>
+					<ThemeProvider>{children}</ThemeProvider>
 					<TanStackDevtools
 						config={{
 							position: "bottom-right",
@@ -79,6 +104,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 					<Scripts />
 				</body>
 			</html>
-		</ClerkProvider>
+		</ConvexBetterAuthProvider>
 	);
 }

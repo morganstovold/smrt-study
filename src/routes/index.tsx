@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ModeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({ component: App });
 
@@ -10,6 +11,9 @@ function App() {
 				<h1 className="text-2xl font-bold">SMRT Study</h1>
 			</header>
 			<ModeToggle />
+			<Button asChild>
+				<Link to="/dashboard">Dashboard</Link>
+			</Button>
 		</div>
 	);
 }
