@@ -1,4 +1,5 @@
 import { ConvexQueryClient } from "@convex-dev/react-query";
+import * as Sentry from "@sentry/tanstackstart-react";
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routerWithQueryClient } from "@tanstack/react-router-with-query";
@@ -45,6 +46,30 @@ export const getRouter = () => {
 		}),
 		queryClient,
 	);
+
+	if (!router.isServer) {
+		Sentry.init({
+			dsn: "https://03d36a6463223e353254a4f7b0aba7e1@o4510326395109376.ingest.us.sentry.io/4510326398713856",
+
+			integrations: [
+				Sentry.tanstackRouterBrowserTracingIntegration(router),
+				Sentry.replayIntegration(),
+			],
+
+			// Set tracesSampleRate to 1.0 to capture 100%
+			// of transactions for tracing.
+			tracesSampleRate: 1.0,
+
+			// Capture Replay for 10% of all sessions,
+			// plus for 100% of sessions with an error.
+			replaysSessionSampleRate: 0.1,
+			replaysOnErrorSampleRate: 1.0,
+
+			// Setting this option to true will send default PII data to Sentry.
+			// For example, automatic IP address collection on events
+			sendDefaultPii: true,
+		});
+	}
 
 	return router;
 };
