@@ -49,7 +49,7 @@ export const getRouter = () => {
 
 	if (!router.isServer) {
 		Sentry.init({
-			dsn: "https://03d36a6463223e353254a4f7b0aba7e1@o4510326395109376.ingest.us.sentry.io/4510326398713856",
+			dsn: "https://1168f394eb02ba91a8a69980df23f8cd@o4510326395109376.ingest.us.sentry.io/4510326462021632",
 
 			integrations: [
 				Sentry.tanstackRouterBrowserTracingIntegration(router),
@@ -68,6 +68,8 @@ export const getRouter = () => {
 			// Setting this option to true will send default PII data to Sentry.
 			// For example, automatic IP address collection on events
 			sendDefaultPii: true,
+
+			environment: import.meta.env.NODE_ENV,
 		});
 	}
 
