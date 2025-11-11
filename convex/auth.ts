@@ -22,6 +22,7 @@ export const createAuth = (
 		},
 		baseURL: siteUrl,
 		database: authComponent.adapter(ctx),
+		trustedOrigins: ["https://smrtstudy.com", "http://localhost:3000"],
 		socialProviders: {
 			github: {
 				clientId: process.env.GITHUB_CLIENT_ID as string,
