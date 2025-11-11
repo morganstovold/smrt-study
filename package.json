@@ -6,7 +6,7 @@
 		"dev": "concurrently -r pnpm:dev:web pnpm:dev:convex",
 		"dev:web": "vite dev --port 3000",
 		"dev:convex": "convex dev",
-		"build": "vite build && cp instrument.server.mjs .output/server/instrument.server.mjs",
+		"build": "vite build",
 		"test": "vitest run",
 		"format": "biome format --write",
 		"lint": "biome lint --write",
