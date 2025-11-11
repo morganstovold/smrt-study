@@ -13,7 +13,7 @@ function RouteComponent() {
 				breadcrumbs={[
 					{
 						label: "Dashboard",
-						url: "/dashboard",
+						url: "/overview",
 					},
 					{
 						label: "Materials",

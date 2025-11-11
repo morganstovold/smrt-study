@@ -12,7 +12,7 @@ function App() {
 			</header>
 			<ModeToggle />
 			<Button asChild>
-				<Link to="/dashboard">Dashboard</Link>
+				<Link to="/overview">Dashboard</Link>
 			</Button>
 		</div>
 	);

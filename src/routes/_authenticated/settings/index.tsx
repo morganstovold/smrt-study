@@ -1,6 +1,6 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { SidebarPageWrapper } from "@/components/sidebar/sidebar-page-wrapper";
 import { SidebarInset } from "@/components/ui/sidebar";
-import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/settings/")({
 	component: RouteComponent,
@@ -13,7 +13,7 @@ function RouteComponent() {
 				breadcrumbs={[
 					{
 						label: "Dashboard",
-						url: "/dashboard",
+						url: "/overview",
 					},
 					{
 						label: "Settings",

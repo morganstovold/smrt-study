@@ -12,7 +12,7 @@ export function LoginPage() {
 		try {
 			await authClient.signIn.social({
 				provider: "github",
-				callbackURL: "/dashboard",
+				callbackURL: "/overview",
 			});
 		} catch (error) {
 			console.error("Login failed:", error);
